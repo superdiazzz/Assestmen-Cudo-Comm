@@ -2,12 +2,8 @@
 
 ## Offline Queue Reliability
 
-Repository ini berisi starter project TypeScript dan Jest untuk practical
-assessment mengenai reliability antrean offline pada aplikasi mobile.
-
-Instruksi sesi resmi, durasi, recording, dan metode pengumpulan hasil akan
-disampaikan oleh HR. Jika terdapat perbedaan, ikuti dokumen terbaru yang
-diberikan oleh HR.
+Starter project TypeScript dan Jest untuk assessment reliability antrean
+offline pada aplikasi mobile.
 
 ## Requirements
 
@@ -15,15 +11,19 @@ diberikan oleh HR.
 - npm
 - Git
 
-## Setup dan Baseline
+## Menjalankan Project
 
 ```bash
+git clone https://github.com/anggaprytn/mobile-reliability-assessment.git
+cd mobile-reliability-assessment
 npm ci
 npm run typecheck
 npm test
 ```
 
-Sebelum melakukan perubahan, hasil yang diharapkan adalah:
+## Baseline
+
+Sebelum melakukan perubahan:
 
 - `npm ci` berhasil.
 - `npm run typecheck` berhasil.
@@ -35,21 +35,6 @@ Expected: 1
 Received: 2
 ```
 
-Kegagalan tersebut merupakan bagian dari baseline assessment. Jangan
-memperbaikinya sebelum waktu pengerjaan resmi dimulai.
+## Tugas
 
-Jika baseline berbeda, tunjukkan hasil terminal dan informasikan kepada HR.
-
-## Struktur Repository
-
-```text
-src/    TypeScript domain, queue, synchronization, API, dan infrastructure
-tests/  Candidate-visible Jest tests
-```
-
-## Tugas Assessment
-
-Baca [CANDIDATE_TASK.md](./CANDIDATE_TASK.md) sebelum mulai mengubah kode.
-
-Jangan membuat pull request ke repository assessment utama dan jangan
-memublikasikan solusi assessment dalam repository public.
+Baca [CANDIDATE_TASK.md](./CANDIDATE_TASK.md).
