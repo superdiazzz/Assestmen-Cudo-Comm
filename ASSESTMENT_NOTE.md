@@ -1,4 +1,4 @@
-#ROOT CAUSE
+*ROOT CAUSE*
 
 **Request timeout (Point 4&5)**
 Di `sync/deliverySync.ts`, method `submitItem()` men-generate **idempotency key** baru tiap kali submit. Persoalan tampak disini:
@@ -22,7 +22,7 @@ Jika retry lagi maka akan tercatat sebagai submission kedua. Jadi mestinya pakai
 **Notes**
 Pemicu timeout dan service berulang disebabkan oleh persoalan yang sama.
 
-#Code Changes
+*Code Changes*
 1. `src/sync/deliverySync.ts` 
 2. `jest.config.js`
 3. `test/double-tap-enqueue.test.ts` -> bukti perbaikan point 2
