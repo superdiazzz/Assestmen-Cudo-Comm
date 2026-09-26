@@ -1,4 +1,4 @@
-*ROOT CAUSE*
+# ROOT CAUSE
 
 **Request timeout (Point 4&5)**
 Di `sync/deliverySync.ts`, method `submitItem()` men-generate **idempotency key** baru tiap kali submit. Persoalan tampak disini:
@@ -19,7 +19,7 @@ Jika retry lagi maka akan tercatat sebagai submission kedua. Jadi mestinya pakai
 **Sinkronisasi bersamaan(Point 3)**
 `sync()` tidak punya guard in-flight; kedua pemanggilan bisa mengambil snapshot store yang sama sebelum status sempat terupdate ke `syncing`, item yang sama bisa di proses lebih dari sekali dalam satu layer.
 
-**Notes**
+# Notes
 Pemicu timeout dan service berulang disebabkan oleh persoalan yang sama.
 
 *Code Changes*
