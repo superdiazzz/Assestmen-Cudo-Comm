@@ -1,5 +1,4 @@
 import {
-  DeliverySync,
   FakeClock,
   FakeDeliveryApi,
   InMemoryPersistentStore,
@@ -8,6 +7,8 @@ import {
   createPersistentQueueBacking,
   type DeliveryPayload,
 } from "../src";
+import { DeliverySync } from "../src/sync/deliverySync"
+
 
 const delivery: DeliveryPayload = {
   taskId: "task-101",

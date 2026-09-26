@@ -18,6 +18,11 @@ export type DeliverySyncOptions = {
 export class DeliverySync {
   private readonly retryDelayMs: number;
 
+  // Tracks operationIds currently being submitted by THIS instance, so that
+  // two overlapping sync() calls can never pick up and submit the same
+  // queue item at the same time (see the in-flight guard in sync()).
+  private readonly inFlightOperationIds = new Set<string>();
+
   public constructor(
     private readonly store: QueueStore,
     private readonly api: DeliveryApi,
@@ -30,6 +35,16 @@ export class DeliverySync {
   }
 
   public async enqueue(payload: DeliveryPayload): Promise<QueueItem> {
+    // A "double tap" re-runs the same business action (e.g. the same
+    // courier confirming the same task twice in a row) before the first
+    // attempt has finished or failed permanently. Reuse the existing active
+    // entry instead of creating a second queue item / operation identity
+    // for the same task.
+    const active = await this.findActiveItemForTask(payload.taskId);
+    if (active !== undefined) {
+      return { ...active, payload: { ...active.payload } };
+    }
+
     const item: QueueItem = {
       taskId: payload.taskId,
       operationId: this.idGenerator.generate(),
@@ -51,13 +66,40 @@ export class DeliverySync {
     const readyItems = items.filter(
       (item) =>
         item.status === "pending" &&
+        !this.inFlightOperationIds.has(item.operationId) &&
         (item.nextAttemptAt === undefined ||
           item.nextAttemptAt <= this.clock.now()),
     );
 
+    // Reserve every item synchronously (no `await` in between) before doing
+    // any actual work. If another sync() call is already in flight, its own
+    // reservation happened in its own uninterrupted synchronous section, so
+    // whichever call reserves an item first is guaranteed to "win" it and
+    // the other call's filter above will exclude it.
     for (const item of readyItems) {
-      await this.submitItem(item);
+      this.inFlightOperationIds.add(item.operationId);
     }
+
+    try {
+      for (const item of readyItems) {
+        await this.submitItem(item);
+      }
+    } finally {
+      for (const item of readyItems) {
+        this.inFlightOperationIds.delete(item.operationId);
+      }
+    }
+  }
+
+  private async findActiveItemForTask(
+    taskId: string,
+  ): Promise<QueueItem | undefined> {
+    const items = await this.store.list();
+    return items.find(
+      (item) =>
+        item.taskId === taskId &&
+        (item.status === "pending" || item.status === "syncing"),
+    );
   }
 
   private async submitItem(item: QueueItem): Promise<void> {
@@ -69,7 +111,7 @@ export class DeliverySync {
 
     try {
       await this.api.submitDelivery(item.payload, {
-        idempotencyKey: this.idGenerator.generate(),
+        idempotencyKey: item.operationId,
       });
       await this.store.remove(item.operationId);
     } catch (error: unknown) {
